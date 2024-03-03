@@ -30,6 +30,12 @@ func (app *application) createStudentHandler(w http.ResponseWriter, r *http.Requ
 		DateOfBirth: input.DateOfBirth,
 	}
 
+	err = app.models.Students.Insert(student)
+	if err != nil {
+		app.serverErrorResponse(w, r, err)
+		return
+	}
+	app.logger.Info("sheesh")
 	err = app.writeJSON(w, http.StatusCreated, envelope{"student": student}, nil)
 	if err != nil {
 		app.serverErrorResponse(w, r, err)

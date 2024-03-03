@@ -1,5 +1,6 @@
-CREATE TABLE IF EXISTS classes (
+CREATE TABLE IF NOT EXISTS classes (
     class_id serial PRIMARY KEY,
-    faculty_id integer REFERENCES faculty(faculty_id),
-    term text NOT NULL,
+    class_name text NOT NULL,
+    faculty_id integer REFERENCES faculty(faculty_id) ON DELETE CASCADE,
+    term text NOT NULL
 );
