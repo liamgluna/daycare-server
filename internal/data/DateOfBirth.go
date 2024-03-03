@@ -17,7 +17,7 @@ type Date time.Time
 func (d Date) MarshalJSON() ([]byte, error) {
 	// format the time.Time value using the desired layout and
 	// wrap it in double quotes before returning it
-	return []byte(strconv.Quote(time.Time(d).Format("2006-Jan-02"))), nil
+	return []byte(strconv.Quote(time.Time(d).Format("2006-01-02"))), nil
 }
 
 // IMPORTANT: Because UnmarshalJSON() needs to modify the
@@ -29,7 +29,7 @@ func (d *Date) UnmarshalJSON(jsonValue []byte) error {
 		return ErrInvalidDateFormat
 	}
 
-	t, err := time.Parse("2006-Jan-02", unquotedJSONValue)
+	t, err := time.Parse("2006-01-02", unquotedJSONValue)
 	if err != nil {
 		return ErrInvalidDateFormat
 	}

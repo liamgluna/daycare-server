@@ -4,6 +4,6 @@ CREATE TABLE IF NOT EXISTS guardians (
     last_name text NOT NULL,
     gender text NOT NULL,
     relationship text NOT NULL,
-    ocupation text NOT NULL,
+    occupation text NOT NULL,
     contact bigint NOT NULL
 );
