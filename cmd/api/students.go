@@ -1,6 +1,8 @@
 package main
 
 import (
+	"errors"
+	"fmt"
 	"net/http"
 	"strconv"
 	"time"
@@ -9,38 +11,41 @@ import (
 	"github.com/liamgluna/daycare-server/internal/data"
 )
 
-// func (app *application) createStudentHandler(w http.ResponseWriter, r *http.Request) {
-// 	var input struct {
-// 		FirstName   string    `json:"first_name"`
-// 		LastName    string    `json:"last_name"`
-// 		Gender      string    `json:"gender"`
-// 		DateOfBirth data.Date `json:"date_of_birth"`
-// 	}
+func (app *application) createStudentHandler(w http.ResponseWriter, r *http.Request) {
+	var input struct {
+		FirstName   string    `json:"first_name"`
+		LastName    string    `json:"last_name"`
+		Gender      string    `json:"gender"`
+		DateOfBirth data.Date `json:"date_of_birth"`
+	}
 
-// 	err := app.readJSON(w, r, &input)
-// 	if err != nil {
-// 		app.badRequestResponse(w, r, err)
-// 		return
-// 	}
+	err := app.readJSON(w, r, &input)
+	if err != nil {
+		app.badRequestResponse(w, r, err)
+		return
+	}
 
-// 	student := &data.Student{
-// 		FirstName:   input.FirstName,
-// 		LastName:    input.LastName,
-// 		Gender:      input.Gender,
-// 		DateOfBirth: input.DateOfBirth,
-// 	}
+	student := &data.Student{
+		FirstName:   input.FirstName,
+		LastName:    input.LastName,
+		Gender:      input.Gender,
+		DateOfBirth: input.DateOfBirth,
+	}
 
-// 	err = app.models.Students.Insert(student)
-// 	if err != nil {
-// 		app.serverErrorResponse(w, r, err)
-// 		return
-// 	}
-// 	app.logger.Info("sheesh")
-// 	err = app.writeJSON(w, http.StatusCreated, envelope{"student": student}, nil)
-// 	if err != nil {
-// 		app.serverErrorResponse(w, r, err)
-// 	}
-// }
+	err = app.models.Students.Insert(student)
+	if err != nil {
+		app.serverErrorResponse(w, r, err)
+		return
+	}
+
+	headers := make(http.Header)
+	headers.Set("Location", fmt.Sprintf("/students/%d", student.StudentID))
+
+	err = app.writeJSON(w, http.StatusCreated, envelope{"student": student}, nil)
+	if err != nil {
+		app.serverErrorResponse(w, r, err)
+	}
+}
 
 /*
 The post request:
@@ -73,7 +78,7 @@ The post request:
 	}
 */
 
-func (app *application) createStudentHandler(w http.ResponseWriter, r *http.Request) {
+func (app *application) createStudentWithGuardiansHandler(w http.ResponseWriter, r *http.Request) {
 	var input struct {
 		Student struct {
 			FirstName   string    `json:"first_name"`
@@ -121,7 +126,10 @@ func (app *application) createStudentHandler(w http.ResponseWriter, r *http.Requ
 		return
 	}
 
-	err = app.writeJSON(w, http.StatusOK, envelope{"message": "sheesh"}, nil)
+	headers := make(http.Header)
+	headers.Set("Location", fmt.Sprintf("/students/%d", student.StudentID))
+
+	err = app.writeJSON(w, http.StatusCreated, envelope{"student": student}, nil)
 	if err != nil {
 		app.serverErrorResponse(w, r, err)
 	}
@@ -188,6 +196,17 @@ func (app *application) deleteStudentHandler(w http.ResponseWriter, r *http.Requ
 	id, err := strconv.ParseInt(chi.URLParam(r, "id"), 10, 64)
 	if err != nil || id < 1 {
 		app.notFoundResponse(w, r)
+		return
+	}
+
+	err = app.models.Students.Delete(id)
+	if err != nil {
+		switch {
+		case errors.Is(err, data.ErrRecordNotFound):
+			app.notFoundResponse(w, r)
+		default:
+			app.serverErrorResponse(w, r, err)
+		}
 		return
 	}
 

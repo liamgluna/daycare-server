@@ -31,13 +31,21 @@ func (app *application) routes() http.Handler {
 	router.Get("/health", app.healthHandler)
 
 	router.Route("/students", app.loadStudentRoutes)
+	router.Route("/faculty", app.loadFacultyRoutes)
 
 	return router
 }
 
 func (app *application) loadStudentRoutes(router chi.Router) {
-	router.Post("/", app.createStudentHandler)
+	router.Post("/", app.createStudentWithGuardiansHandler)
 	router.Get("/{id}", app.showStudentHandler)
 	router.Patch("/{id}", app.updateStudentHandler)
 	router.Delete("/{id}", app.deleteStudentHandler)
+}
+
+func (app *application) loadFacultyRoutes(router chi.Router) {
+	router.Post("/", app.createFacultyHandler)
+	// router.Get("/{id}", app.showFacultyHandler)
+	// router.Patch("/{id}", app.updateFacultyHandler)
+	// router.Delete("/{id}", app.deleteFacultyHandler)
 }

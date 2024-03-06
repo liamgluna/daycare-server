@@ -5,5 +5,6 @@ CREATE TABLE IF NOT EXISTS guardians (
     gender text NOT NULL,
     relationship text NOT NULL,
     occupation text NOT NULL,
-    contact bigint NOT NULL
+    contact bigint NOT NULL,
+    student_id integer REFERENCES students(student_id) ON DELETE CASCADE
 );

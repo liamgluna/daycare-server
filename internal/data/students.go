@@ -75,22 +75,24 @@ func (m StudentModel) InsertWithGuardians(student *Student, guardians []*Guardia
 		VALUES ($1, $2, $3, $4)
 		RETURNING student_id
 	`
-	var studentID int
+	var studentID int64
 	err = tx.QueryRow(query, student.FirstName, student.LastName, student.Gender, time.Time(student.DateOfBirth)).Scan(&studentID)
 	if err != nil {
 		return err
 	}
 
+	student.StudentID = studentID
+
 	// Insert guardians and associate them with the student
 	for _, guardian := range guardians {
 		// Insert guardian
 		query = `
-			INSERT INTO guardians (first_name, last_name, gender, relationship, occupation, contact)
-			VALUES ($1, $2, $3, $4, $5, $6)
+			INSERT INTO guardians (first_name, last_name, gender, relationship, occupation, contact, student_id)
+			VALUES ($1, $2, $3, $4, $5, $6, $7)
 			RETURNING guardian_id
 		`
 		var guardianID int
-		err := tx.QueryRow(query, guardian.FirstName, guardian.LastName, guardian.Gender, guardian.Relationship, guardian.Occupation, guardian.Contact).Scan(&guardianID)
+		err := tx.QueryRow(query, guardian.FirstName, guardian.LastName, guardian.Gender, guardian.Relationship, guardian.Occupation, guardian.Contact, studentID).Scan(&guardianID)
 		if err != nil {
 			return err
 		}
@@ -114,3 +116,87 @@ func (m StudentModel) InsertWithGuardians(student *Student, guardians []*Guardia
 
 	return nil
 }
+
+func (m StudentModel) Delete(id int64) error {
+	if id < 1 {
+		return ErrRecordNotFound
+	}
+
+	query := `
+		DELETE FROM students
+		WHERE student_id = $1
+	`
+
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+
+	result, err := m.DB.ExecContext(ctx, query, id)
+	if err != nil {
+		return err
+	}
+
+	rowsAffected, err := result.RowsAffected()
+	if err != nil {
+		return err
+	}
+
+	if rowsAffected == 0 {
+		return ErrRecordNotFound
+	}
+
+	return nil
+}
+
+// delete also the associated guardians
+// func (m StudentModel) Delete(id int64) error {
+// 	if id < 1 {
+// 		return ErrRecordNotFound
+// 	}
+
+// 	tx, err := m.DB.Begin()
+// 	if err != nil {
+// 		return err
+// 	}
+// 	defer tx.Rollback()
+
+// 	query := `
+// 		DELETE FROM students
+// 		WHERE student_id = $1
+// 	`
+
+// 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+// 	defer cancel()
+
+// 	result, err := tx.ExecContext(ctx, query, id)
+// 	if err != nil {
+// 		return err
+// 	}
+
+// 	rowsAffected, err := result.RowsAffected()
+// 	if err != nil {
+// 		return err
+// 	}
+
+// 	if rowsAffected == 0 {
+// 		return ErrRecordNotFound
+// 	}
+
+// 	// Delete associated guardians
+// 	query = `
+// 		DELETE FROM student_guardian
+// 		WHERE student_id = $1
+// 		`
+
+// 	_, err = tx.ExecContext(ctx, query, id)
+// 	if err != nil {
+// 		return err
+// 	}
+
+// 	// Commit transaction
+// 	err = tx.Commit()
+// 	if err != nil {
+// 		return err
+// 	}
+
+// 	return nil
+// }
