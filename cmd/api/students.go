@@ -129,7 +129,7 @@ func (app *application) createStudentWithGuardiansHandler(w http.ResponseWriter,
 	headers := make(http.Header)
 	headers.Set("Location", fmt.Sprintf("/students/%d", student.StudentID))
 
-	err = app.writeJSON(w, http.StatusCreated, envelope{"student": student}, nil)
+	err = app.writeJSON(w, http.StatusCreated, envelope{"student": student}, headers)
 	if err != nil {
 		app.serverErrorResponse(w, r, err)
 	}

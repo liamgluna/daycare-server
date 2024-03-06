@@ -39,7 +39,7 @@ func (app *application) createFacultyHandler(w http.ResponseWriter, r *http.Requ
 	headers := make(http.Header)
 	headers.Set("Location", fmt.Sprintf("/faculty/%d", faculty.FacultyID))
 
-	err = app.writeJSON(w, http.StatusCreated, envelope{"faculty": faculty}, nil)
+	err = app.writeJSON(w, http.StatusCreated, envelope{"faculty": faculty}, headers)
 	if err != nil {
 		app.serverErrorResponse(w, r, err)
 	}
