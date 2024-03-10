@@ -91,7 +91,7 @@ func (app *application) createStudentWithGuardiansHandler(w http.ResponseWriter,
 			Gender       string `json:"gender"`
 			Relationship string `json:"relationship"`
 			Occupation   string `json:"ocupation"`
-			Contact      string  `json:"contact"`
+			Contact      string `json:"contact"`
 		} `json:"guardians"`
 	}
 	err := app.readJSON(w, r, &input)
@@ -237,6 +237,32 @@ func (app *application) showStudentHandler(w http.ResponseWriter, r *http.Reques
 	}
 
 	err = app.writeJSON(w, http.StatusOK, envelope{"student": student}, nil)
+	if err != nil {
+		app.serverErrorResponse(w, r, err)
+	}
+}
+
+func (app *application) listStudentsHandler(w http.ResponseWriter, r *http.Request) {
+	var input struct {
+		Name string
+		data.Filters
+	}
+
+	qs := r.URL.Query()
+
+	input.Name = app.readString(qs, "name", "")
+	input.Filters.Page = app.readInt(qs, "page", 1)
+	input.Filters.PageSize = app.readInt(qs, "page_size", 20)
+	input.Filters.Sort = app.readString(qs, "sort", "last_name")
+	input.Filters.SortSafelist = []string{"student_id", "first_name", "last_name", "-student_id", "-first_name", "-last_name"}
+
+	students, metadata, err := app.models.Students.GetAll(input.Name, input.Filters)
+	if err != nil {
+		app.serverErrorResponse(w, r, err)
+		return
+	}
+
+	err = app.writeJSON(w, http.StatusOK, envelope{"students": students, "metadata": metadata}, nil)
 	if err != nil {
 		app.serverErrorResponse(w, r, err)
 	}

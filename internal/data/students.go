@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"fmt"
 	"time"
 )
 
@@ -265,4 +266,51 @@ func (m StudentModel) Update(student *Student) error {
 	}
 
 	return nil
+}
+
+func (m StudentModel) GetAll(name string, filters Filters) ([]*Student, Metadata, error) {
+	query := fmt.Sprintf(`
+		SELECT count(*) OVER(), student_id, first_name, last_name, gender, date_of_birth
+		FROM students
+		WHERE (to_tsvector('simple', first_name || ' ' || last_name) @@ plainto_tsquery('simple', $1))
+		OR $1 = ''
+		ORDER BY %s %s, last_name ASC
+		LIMIT $2 OFFSET $3`, filters.sortColumn(), filters.sortDirection())
+
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+
+	rows, err := m.DB.QueryContext(ctx, query, name, filters.limit(), filters.offset())
+	if err != nil {
+		return nil, Metadata{}, err
+	}
+	defer rows.Close()
+
+	var students []*Student
+	totalRecords := 0
+
+	for rows.Next() {
+		var student Student
+		err := rows.Scan(
+			&totalRecords,
+			&student.StudentID,
+			&student.FirstName,
+			&student.LastName,
+			&student.Gender,
+			&student.DateOfBirth,
+		)
+		if err != nil {
+			return nil, Metadata{}, err
+		}
+
+		students = append(students, &student)
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, Metadata{}, err
+	}
+
+	metadata := calculateMetadata(totalRecords, filters.Page, filters.PageSize)
+
+	return students, metadata, nil
 }
