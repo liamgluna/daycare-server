@@ -3,6 +3,7 @@ package data
 import (
 	"context"
 	"database/sql"
+	"errors"
 	"time"
 )
 
@@ -117,6 +118,42 @@ func (m StudentModel) InsertWithGuardians(student *Student, guardians []*Guardia
 	return nil
 }
 
+func (m StudentModel) Get(id int64) (*Student, error) {
+	if id < 1 {
+		return nil, ErrRecordNotFound
+	}
+
+	query := `
+		SELECT student_id, first_name, last_name, gender, date_of_birth
+		FROM students
+		WHERE student_id = $1`
+
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+
+	var student Student
+
+	row := m.DB.QueryRowContext(ctx, query, id)
+	err := row.Scan(
+		&student.StudentID,
+		&student.FirstName,
+		&student.LastName,
+		&student.Gender,
+		&student.DateOfBirth,
+	)
+
+	if err != nil {
+		switch {
+		case errors.Is(err, sql.ErrNoRows):
+			return nil, ErrRecordNotFound
+		default:
+			return nil, err
+		}
+	}
+
+	return &student, nil
+}
+
 func (m StudentModel) Delete(id int64) error {
 	if id < 1 {
 		return ErrRecordNotFound
@@ -200,3 +237,32 @@ func (m StudentModel) Delete(id int64) error {
 
 // 	return nil
 // }
+
+func (m StudentModel) Update(student *Student) error {
+	query := `
+		UPDATE students
+		SET first_name = $1, last_name = $2, gender = $3, date_of_birth = $4
+		WHERE student_id = $5
+		`
+
+	args := []any{student.FirstName, student.LastName, student.Gender, time.Time(student.DateOfBirth), student.StudentID}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+
+	result, err := m.DB.ExecContext(ctx, query, args...)
+	if err != nil {
+		return err
+	}
+
+	rowsAffected, err := result.RowsAffected()
+	if err != nil {
+		return err
+	}
+
+	if rowsAffected == 0 {
+		return ErrRecordNotFound
+	}
+
+	return nil
+}
