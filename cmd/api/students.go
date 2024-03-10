@@ -91,7 +91,7 @@ func (app *application) createStudentWithGuardiansHandler(w http.ResponseWriter,
 			Gender       string `json:"gender"`
 			Relationship string `json:"relationship"`
 			Occupation   string `json:"ocupation"`
-			Contact      int64  `json:"contact"`
+			Contact      string  `json:"contact"`
 		} `json:"guardians"`
 	}
 	err := app.readJSON(w, r, &input)

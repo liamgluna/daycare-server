@@ -16,7 +16,7 @@ func (app *application) createGuardianHandler(w http.ResponseWriter, r *http.Req
 		Gender       string `json:"gender"`
 		Relationship string `json:"relationship"`
 		Ocupation    string `json:"ocupation"`
-		Contact      int64  `json:"contact"`
+		Contact      string  `json:"contact"`
 	}
 
 	err := app.readJSON(w, r, &input)
