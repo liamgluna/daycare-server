@@ -160,10 +160,7 @@ func (m StudentModel) Delete(id int64) error {
 		return ErrRecordNotFound
 	}
 
-	query := `
-		DELETE FROM students
-		WHERE student_id = $1
-	`
+	query := `DELETE FROM students WHERE student_id = $1`
 
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()

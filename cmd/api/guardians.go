@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"net/http"
 	"strconv"
 	"time"
@@ -31,7 +32,10 @@ func (app *application) createGuardianHandler(w http.ResponseWriter, r *http.Req
 		Gender:    input.Gender,
 	}
 
-	err = app.writeJSON(w, http.StatusCreated, envelope{"student": student}, nil)
+	headers := make(http.Header)
+	headers.Set("Location", fmt.Sprintf("/guardians/%d", student.StudentID))
+
+	err = app.writeJSON(w, http.StatusCreated, envelope{"student": student}, headers)
 	if err != nil {
 		app.serverErrorResponse(w, r, err)
 	}
