@@ -46,7 +46,7 @@ func (app *application) loadStudentRoutes(router chi.Router) {
 
 func (app *application) loadFacultyRoutes(router chi.Router) {
 	router.Post("/", app.createFacultyHandler)
-	// router.Get("/{id}", app.showFacultyHandler)
-	// router.Patch("/{id}", app.updateFacultyHandler)
+	router.Get("/{id}", app.showFacultyHandler)
+	router.Patch("/{id}", app.updateFacultyHandler)
 	// router.Delete("/{id}", app.deleteFacultyHandler)
 }
