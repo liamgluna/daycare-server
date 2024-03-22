@@ -32,6 +32,7 @@ func (app *application) createClassHandler(w http.ResponseWriter, r *http.Reques
 	err = app.models.Classes.Insert(class)
 	if err != nil {
 		app.serverErrorResponse(w, r, err)
+		return
 	}
 
 	headers := make(http.Header)
@@ -138,5 +139,32 @@ func (app *application) showClassHandler(w http.ResponseWriter, r *http.Request)
 	err = app.writeJSON(w, http.StatusOK, envelope{"class": class}, nil)
 	if err != nil {
 		app.serverErrorResponse(w, r, err)
+	}
+}
+
+func (app *application) listClassesHandler(w http.ResponseWriter, r *http.Request) {
+	var input struct {
+		Name string
+		data.Filters
+	}
+
+	qs := r.URL.Query()
+
+	input.Name = app.readString(qs, "name", "")
+	input.Filters.Page = app.readInt(qs, "page", 1)
+	input.Filters.PageSize = app.readInt(qs, "page_size", 20)
+	input.Filters.Sort = app.readString(qs, "sort", "class_id")
+	input.Filters.SortSafelist = []string{"class_id", "class_name", "term", "-class_id", "-class_name", "-term"}
+
+	classes, metadata, err := app.models.Classes.GetAll(input.Name, input.Filters)
+	if err != nil {
+		app.serverErrorResponse(w, r, err)
+		return
+	}
+
+	err = app.writeJSON(w, http.StatusOK, envelope{"classes": classes, "metadata": metadata}, nil)
+	if err != nil {
+		app.serverErrorResponse(w, r, err)
+		return
 	}
 }

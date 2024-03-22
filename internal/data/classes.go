@@ -3,6 +3,7 @@ package data
 import (
 	"context"
 	"database/sql"
+	"fmt"
 	"time"
 )
 
@@ -36,7 +37,8 @@ func (m ClassModel) Get(id int64) (*Class, error) {
 		return nil, ErrRecordNotFound
 	}
 
-	query := `SELECT * FROM classes WHERE class_id = $1`
+	query := `SELECT class_id, faculty_id, class_name, term
+	 	FROM classes WHERE class_id = $1`
 
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
@@ -108,4 +110,50 @@ func (m ClassModel) Delete(id int64) error {
 	}
 
 	return nil
+}
+
+func (m ClassModel) GetAll(name string, filters Filters) ([]*Class, Metadata, error) {
+	query := fmt.Sprintf(`
+		SELECT count(*) OVER(), class_id, faculty_id, class_name, term
+		FROM classes
+		WHERE (to_tsvector('simple', class_name) @@ plainto_tsquery('simple', $1))
+		OR $1 = ''
+		ORDER BY %s %s, class_id ASC
+		LIMIT $2 OFFSET $3`, filters.sortColumn(), filters.sortDirection())
+
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+
+	rows, err := m.DB.QueryContext(ctx, query, name, filters.limit(), filters.offset())
+	if err != nil {
+		return nil, Metadata{}, err
+	}
+	defer rows.Close()
+
+	var classes []*Class
+	totalRecords := 0
+
+	for rows.Next() {
+		var class Class
+		err := rows.Scan(
+			&totalRecords,
+			&class.ClassID,
+			&class.FacultyID,
+			&class.ClassName,
+			&class.Term,
+		)
+		if err != nil {
+			return nil, Metadata{}, err
+		}
+
+		classes = append(classes, &class)
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, Metadata{}, err
+	}
+
+	metaData := calculateMetadata(totalRecords, filters.Page, filters.PageSize)
+
+	return classes, metaData, nil
 }

@@ -271,7 +271,7 @@ func (m StudentModel) GetAll(name string, filters Filters) ([]*Student, Metadata
 		FROM students
 		WHERE (to_tsvector('simple', first_name || ' ' || last_name) @@ plainto_tsquery('simple', $1))
 		OR $1 = ''
-		ORDER BY %s %s, last_name ASC
+		ORDER BY %s %s, student_id ASC
 		LIMIT $2 OFFSET $3`, filters.sortColumn(), filters.sortDirection())
 
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)

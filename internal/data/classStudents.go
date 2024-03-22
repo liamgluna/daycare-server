@@ -55,3 +55,81 @@ func (m ClassStudentsModel) Delete(classID, studentID int64) error {
 
 	return nil
 }
+
+// func (m ClassStudentsModel) GetByClassID(classID int64) ([]int64, error) {
+// 	if classID < 1 {
+// 		return nil, ErrRecordNotFound
+// 	}
+
+// 	query := `SELECT student_id FROM class_students WHERE class_id = $1`
+
+// 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+// 	defer cancel()
+
+// 	rows, err := m.DB.QueryContext(ctx, query, classID)
+// 	if err != nil {
+// 		return nil, err
+// 	}
+// 	defer rows.Close()
+
+// 	var studentIDs []int64
+// 	for rows.Next() {
+// 		var studentID int64
+// 		err := rows.Scan(&studentID)
+// 		if err != nil {
+// 			return nil, err
+// 		}
+// 		studentIDs = append(studentIDs, studentID)
+// 	}
+
+// 	if err = rows.Err(); err != nil {
+// 		return nil, err
+// 	}
+
+// 	return studentIDs, nil
+// }
+
+func (m ClassStudentsModel) GetStudentsByClassID(classID int64) ([]*Student, error) {
+	if classID < 1 {
+		return nil, ErrRecordNotFound
+	}
+
+	query := `
+		SELECT s.student_id, s.first_name, s.last_name, s.gender, s.date_of_birth
+		FROM students s
+		INNER JOIN class_students cs ON s.student_id = cs.student_id
+		WHERE cs.class_id = $1
+		`
+
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+
+	rows, err := m.DB.QueryContext(ctx, query, classID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var students []*Student
+
+	for rows.Next() {
+		var student Student
+		err := rows.Scan(
+			&student.StudentID,
+			&student.FirstName,
+			&student.LastName,
+			&student.Gender,
+			&student.DateOfBirth,
+		)
+		if err != nil {
+			return nil, err
+		}
+		students = append(students, &student)
+	}
+
+	if err = rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return students, nil
+}

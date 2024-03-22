@@ -11,19 +11,24 @@ import (
 )
 
 func (app *application) createClassStudentHandler(w http.ResponseWriter, r *http.Request) {
+	classID, err := strconv.ParseInt(chi.URLParam(r, "classID"), 10, 64)
+	if err != nil || classID < 1 {
+		app.notFoundResponse(w, r)
+		return
+	}
+
 	var input struct {
-		ClassID   int64 `json:"class_id"`
 		StudentID int64 `json:"student_id"`
 	}
 
-	err := app.readJSON(w, r, &input)
+	err = app.readJSON(w, r, &input)
 	if err != nil {
 		app.badRequestResponse(w, r, err)
 		return
 	}
 
 	classStudent := &data.ClassStudents{
-		ClassID:   input.ClassID,
+		ClassID:   classID,
 		StudentID: input.StudentID,
 	}
 
@@ -34,7 +39,8 @@ func (app *application) createClassStudentHandler(w http.ResponseWriter, r *http
 	}
 
 	headers := make(http.Header)
-	headers.Set("Location", fmt.Sprintf("/class-students/%d", classStudent.ClassID))
+	// TODO:
+	headers.Set("Location", fmt.Sprintf("/classes/%d/students/%d", classID, classStudent.ClassID))
 
 	err = app.writeJSON(w, http.StatusCreated, envelope{"classStudent": classStudent}, headers)
 	if err != nil {
@@ -67,6 +73,25 @@ func (app *application) deleteClassStudentHandler(w http.ResponseWriter, r *http
 	}
 
 	err = app.writeJSON(w, http.StatusOK, envelope{"message": "class student deleted successfully"}, nil)
+	if err != nil {
+		app.serverErrorResponse(w, r, err)
+	}
+}
+
+func (app *application) listClassStudentsHandler(w http.ResponseWriter, r *http.Request) {
+	classID, err := strconv.ParseInt(chi.URLParam(r, "classID"), 10, 64)
+	if err != nil || classID < 1 {
+		app.notFoundResponse(w, r)
+		return
+	}
+
+	classStudents, err := app.models.ClassStudents.GetStudentsByClassID(classID)
+	if err != nil {
+		app.serverErrorResponse(w, r, err)
+		return
+	}
+
+	err = app.writeJSON(w, http.StatusOK, envelope{"class_students": classStudents}, nil)
 	if err != nil {
 		app.serverErrorResponse(w, r, err)
 	}
