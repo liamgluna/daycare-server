@@ -32,6 +32,7 @@ func (app *application) routes() http.Handler {
 
 	router.Route("/students", app.loadStudentRoutes)
 	router.Route("/faculty", app.loadFacultyRoutes)
+	router.Route("/classes", app.loadClassRoutes)
 
 	return router
 }
@@ -49,4 +50,16 @@ func (app *application) loadFacultyRoutes(router chi.Router) {
 	router.Get("/{id}", app.showFacultyHandler)
 	router.Patch("/{id}", app.updateFacultyHandler)
 	// router.Delete("/{id}", app.deleteFacultyHandler)
+}
+
+func (app *application) loadClassRoutes(router chi.Router) {
+	router.Post("/", app.createClassHandler)
+	// router.Get("/", app.listClassesHandler)
+	router.Get("/{id}", app.showClassHandler)
+	router.Patch("/{id}", app.updateClassHandler)
+	router.Delete("/{id}", app.deleteClassHandler)
+
+	// router.Get("/{classID}/students", app.listClassStudentsHandler)
+	router.Post("/{classID}/students/{studentID}", app.createClassStudentHandler)
+	router.Delete("/{classID}/students/{studentID}", app.deleteClassStudentHandler)
 }

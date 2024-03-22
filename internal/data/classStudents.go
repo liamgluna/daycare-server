@@ -28,3 +28,30 @@ func (m ClassStudentsModel) Insert(classStudent *ClassStudents) error {
 	_, err := m.DB.ExecContext(ctx, query, args...)
 	return err
 }
+
+func (m ClassStudentsModel) Delete(classID, studentID int64) error {
+	if classID < 1 || studentID < 1 {
+		return ErrRecordNotFound
+	}
+
+	query := `DELETE FROM class_students WHERE class_id = $1 AND student_id = $2`
+
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+
+	result, err := m.DB.ExecContext(ctx, query, classID, studentID)
+	if err != nil {
+		return err
+	}
+
+	rowsAffected, err := result.RowsAffected()
+	if err != nil {
+		return err
+	}
+
+	if rowsAffected == 0 {
+		return ErrRecordNotFound
+	}
+
+	return nil
+}

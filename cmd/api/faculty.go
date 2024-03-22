@@ -15,7 +15,7 @@ func (app *application) createFacultyHandler(w http.ResponseWriter, r *http.Requ
 		FirstName string `json:"first_name"`
 		LastName  string `json:"last_name"`
 		Email     string `json:"email"`
-		Contact   string  `json:"contact"`
+		Contact   string `json:"contact"`
 		Position  string `json:"position"`
 	}
 
@@ -69,7 +69,7 @@ func (app *application) updateFacultyHandler(w http.ResponseWriter, r *http.Requ
 		FirstName *string `json:"first_name"`
 		LastName  *string `json:"last_name"`
 		Email     *string `json:"email"`
-		Contact   *string  `json:"contact"`
+		Contact   *string `json:"contact"`
 		Position  *string `json:"position"`
 	}
 

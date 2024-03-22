@@ -15,7 +15,7 @@ type Models struct {
 	Guardians         GuardianModel
 	StudentGuardian   StudentGuardianModel
 	Faculty           FacultyModel
-	Classes           ClassesModel
+	Classes           ClassModel
 	ClassStudents     ClassStudentsModel
 	StudentAttendance StudentAttendanceModel
 }
@@ -26,7 +26,7 @@ func NewModels(db *sql.DB) Models {
 		Guardians:         GuardianModel{DB: db},
 		StudentGuardian:   StudentGuardianModel{DB: db},
 		Faculty:           FacultyModel{DB: db},
-		Classes:           ClassesModel{DB: db},
+		Classes:           ClassModel{DB: db},
 		ClassStudents:     ClassStudentsModel{DB: db},
 		StudentAttendance: StudentAttendanceModel{DB: db},
 	}
