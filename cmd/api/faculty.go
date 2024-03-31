@@ -101,7 +101,12 @@ func (app *application) loginFacultyHandler(w http.ResponseWriter, r *http.Reque
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+
 	tokenString, err := token.SignedString([]byte(app.cfg.jwtSecret))
+	if err != nil {
+		app.serverErrorResponse(w, r, err)
+		return
+	}
 
 	http.SetCookie(w, &http.Cookie{
 		Name:     "jwt",
