@@ -49,6 +49,9 @@ func (app *application) loadFacultyRoutes(router chi.Router) {
 	router.Post("/", app.createFacultyHandler)
 	router.Get("/{id}", app.showFacultyHandler)
 	router.Patch("/{id}", app.updateFacultyHandler)
+	router.Get("/profile", app.getUserWithTokenHandler)
+	router.Post("/login", app.loginFacultyHandler)
+	router.Post("/logout", app.logoutFacultyHandler)
 	// router.Delete("/{id}", app.deleteFacultyHandler)
 }
 

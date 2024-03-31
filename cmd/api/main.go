@@ -22,6 +22,7 @@ type config struct {
 		maxIdleTime  string
 	}
 	allowCORS string
+	jwtSecret string
 }
 
 type application struct {
@@ -46,6 +47,7 @@ func main() {
 	flag.IntVar(&cfg.db.maxIdleConns, "db-max-idle-conns", 25, "PostgreSQL max idle connections")
 	flag.StringVar(&cfg.db.maxIdleTime, "db-max-idle-time", "15m", "PostgreSQL max connection idle time")
 	flag.StringVar(&cfg.allowCORS, "allowCORS", os.Getenv("ALLOW_CORS"), "Allow CORS")
+	flag.StringVar(&cfg.jwtSecret, "jwt-secret", os.Getenv("JWT_SECRET"), "JWT secret key")
 
 	flag.Parse()
 

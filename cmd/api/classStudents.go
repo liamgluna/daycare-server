@@ -39,8 +39,7 @@ func (app *application) createClassStudentHandler(w http.ResponseWriter, r *http
 	}
 
 	headers := make(http.Header)
-	// TODO:
-	headers.Set("Location", fmt.Sprintf("/classes/%d/students/%d", classID, classStudent.ClassID))
+	headers.Set("Location", fmt.Sprintf("/classes/%d/students", classStudent.ClassID))
 
 	err = app.writeJSON(w, http.StatusCreated, envelope{"classStudent": classStudent}, headers)
 	if err != nil {

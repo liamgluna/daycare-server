@@ -16,22 +16,33 @@ type Faculty struct {
 	FirstName string `json:"first_name"`
 	LastName  string `json:"last_name"`
 	Email     string `json:"email"`
-	Contact   string  `json:"contact"`
+	Password  []byte `json:"-"`
+	Contact   string `json:"contact"`
 	Position  string `json:"position"`
 }
 
 func (m FacultyModel) Insert(faculty *Faculty) error {
 	query := `
-		INSERT INTO faculty (first_name, last_name, email, contact, position) 
-		VALUES ($1, $2, $3, $4, $5)
+		INSERT INTO faculty (first_name, last_name, email, contact, password_hash, position) 
+		VALUES ($1, $2, $3, $4, $5, $6)
 		RETURNING faculty_id
 		`
-	args := []any{faculty.FirstName, faculty.LastName, faculty.Email, faculty.Contact, faculty.Position}
+	args := []any{faculty.FirstName, faculty.LastName, faculty.Email, faculty.Contact, faculty.Password, faculty.Position}
 
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
 
-	return m.DB.QueryRowContext(ctx, query, args...).Scan(&faculty.FacultyID)
+	err := m.DB.QueryRowContext(ctx, query, args...).Scan(&faculty.FacultyID)
+	if err != nil {
+		switch {
+		case err.Error() == `pq: duplicate key value violates unique constraint "faculty_email_key"`:
+			return ErrDuplicateEmail
+		default:
+			return err
+		}
+	}
+
+	return nil
 }
 
 func (m FacultyModel) Update(faculty *Faculty) error {
@@ -60,6 +71,39 @@ func (m FacultyModel) Update(faculty *Faculty) error {
 	}
 
 	return nil
+}
+
+func (m FacultyModel) GetByEmail(email string) (*Faculty, error) {
+	query := `
+		SELECT faculty_id, first_name, last_name, email, password_hash, contact, position
+		FROM faculty
+		WHERE email = $1
+		`
+
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+
+	var faculty Faculty
+
+	err := m.DB.QueryRowContext(ctx, query, email).Scan(
+		&faculty.FacultyID,
+		&faculty.FirstName,
+		&faculty.LastName,
+		&faculty.Email,
+		&faculty.Password,
+		&faculty.Contact,
+		&faculty.Position,
+	)
+	if err != nil {
+		switch {
+		case errors.Is(err, sql.ErrNoRows):
+			return nil, ErrRecordNotFound
+		default:
+			return nil, err
+		}
+	}
+
+	return &faculty, nil
 }
 
 func (m FacultyModel) Get(id int64) (*Faculty, error) {
