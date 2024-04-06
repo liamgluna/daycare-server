@@ -17,7 +17,7 @@ func (app *application) createGuardianHandler(w http.ResponseWriter, r *http.Req
 		Gender       string `json:"gender"`
 		Relationship string `json:"relationship"`
 		Ocupation    string `json:"ocupation"`
-		Contact      string  `json:"contact"`
+		Contact      string `json:"contact"`
 	}
 
 	err := app.readJSON(w, r, &input)
@@ -35,7 +35,7 @@ func (app *application) createGuardianHandler(w http.ResponseWriter, r *http.Req
 	headers := make(http.Header)
 	headers.Set("Location", fmt.Sprintf("/guardians/%d", student.StudentID))
 
-	err = app.writeJSON(w, http.StatusCreated, envelope{"student": student}, headers)
+	err = app.writeEnvelopedJSON(w, http.StatusCreated, envelope{"student": student}, headers)
 	if err != nil {
 		app.serverErrorResponse(w, r, err)
 	}
@@ -57,7 +57,7 @@ func (app *application) showGuardianHandler(w http.ResponseWriter, r *http.Reque
 		DateOfBirth: data.Date(bday),
 	}
 
-	err = app.writeJSON(w, http.StatusOK, envelope{"student": student}, nil)
+	err = app.writeEnvelopedJSON(w, http.StatusOK, envelope{"student": student}, nil)
 	if err != nil {
 		app.serverErrorResponse(w, r, err)
 	}
@@ -92,7 +92,7 @@ func (app *application) updateGuardianHandler(w http.ResponseWriter, r *http.Req
 		DateOfBirth: input.DateOfBirth,
 	}
 
-	err = app.writeJSON(w, http.StatusOK, envelope{"student": student}, nil)
+	err = app.writeEnvelopedJSON(w, http.StatusOK, envelope{"student": student}, nil)
 	if err != nil {
 		app.serverErrorResponse(w, r, err)
 	}
@@ -105,7 +105,7 @@ func (app *application) deleteGuardianHandler(w http.ResponseWriter, r *http.Req
 		return
 	}
 
-	err = app.writeJSON(w, http.StatusOK, envelope{"message": "student deleted successfully"}, nil)
+	err = app.writeEnvelopedJSON(w, http.StatusOK, envelope{"message": "student deleted successfully"}, nil)
 	if err != nil {
 		app.serverErrorResponse(w, r, err)
 	}

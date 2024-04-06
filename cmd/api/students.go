@@ -40,7 +40,7 @@ func (app *application) createStudentHandler(w http.ResponseWriter, r *http.Requ
 	headers := make(http.Header)
 	headers.Set("Location", fmt.Sprintf("/students/%d", student.StudentID))
 
-	err = app.writeJSON(w, http.StatusCreated, envelope{"student": student}, headers)
+	err = app.writeEnvelopedJSON(w, http.StatusCreated, envelope{"student": student}, headers)
 	if err != nil {
 		app.serverErrorResponse(w, r, err)
 	}
@@ -128,7 +128,7 @@ func (app *application) createStudentWithGuardiansHandler(w http.ResponseWriter,
 	headers := make(http.Header)
 	headers.Set("Location", fmt.Sprintf("/students/%d", student.StudentID))
 
-	err = app.writeJSON(w, http.StatusCreated, envelope{"student": student}, headers)
+	err = app.writeEnvelopedJSON(w, http.StatusCreated, envelope{"student": student}, headers)
 	if err != nil {
 		app.serverErrorResponse(w, r, err)
 	}
@@ -152,7 +152,7 @@ func (app *application) deleteStudentHandler(w http.ResponseWriter, r *http.Requ
 		return
 	}
 
-	err = app.writeJSON(w, http.StatusOK, envelope{"message": "student deleted successfully"}, nil)
+	err = app.writeEnvelopedJSON(w, http.StatusOK, envelope{"message": "student deleted successfully"}, nil)
 	if err != nil {
 		app.serverErrorResponse(w, r, err)
 	}
@@ -211,7 +211,7 @@ func (app *application) updateStudentHandler(w http.ResponseWriter, r *http.Requ
 		return
 	}
 
-	err = app.writeJSON(w, http.StatusOK, envelope{"student": student}, nil)
+	err = app.writeEnvelopedJSON(w, http.StatusOK, envelope{"student": student}, nil)
 	if err != nil {
 		app.serverErrorResponse(w, r, err)
 	}
@@ -236,7 +236,7 @@ func (app *application) showStudentHandler(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
-	err = app.writeJSON(w, http.StatusOK, envelope{"student": student}, nil)
+	err = app.writeEnvelopedJSON(w, http.StatusOK, envelope{"student": student}, nil)
 	if err != nil {
 		app.serverErrorResponse(w, r, err)
 	}
@@ -262,7 +262,7 @@ func (app *application) listStudentsHandler(w http.ResponseWriter, r *http.Reque
 		return
 	}
 
-	err = app.writeJSON(w, http.StatusOK, envelope{"students": students, "metadata": metadata}, nil)
+	err = app.writeEnvelopedJSON(w, http.StatusOK, envelope{"students": students, "metadata": metadata}, nil)
 	if err != nil {
 		app.serverErrorResponse(w, r, err)
 	}

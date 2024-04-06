@@ -58,8 +58,28 @@ func (app *application) createFacultyHandler(w http.ResponseWriter, r *http.Requ
 	headers := make(http.Header)
 	headers.Set("Location", fmt.Sprintf("/faculty/%d", faculty.FacultyID))
 
-	err = app.writeJSON(w, http.StatusCreated, envelope{"faculty": faculty}, headers)
+	claims := &jwt.RegisteredClaims{
+		ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Hour * 24)), // 24 hours
+		Issuer:    strconv.Itoa(int(faculty.FacultyID)),
+	}
+
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+
+	tokenString, err := token.SignedString([]byte(app.cfg.jwtSecret))
 	if err != nil {
+		app.serverErrorResponse(w, r, err)
+		return
+	}
+
+	http.SetCookie(w, &http.Cookie{
+		Name:     "jwt",
+		Value:    tokenString,
+		Expires:  time.Now().Add(time.Hour * 24),
+		HttpOnly: true,
+		Secure:   true,
+	})
+
+	if err := app.writeJSON(w, http.StatusOK, faculty, nil); err != nil {
 		app.serverErrorResponse(w, r, err)
 	}
 }
@@ -116,7 +136,7 @@ func (app *application) loginFacultyHandler(w http.ResponseWriter, r *http.Reque
 		Secure:   true,
 	})
 
-	err = app.writeJSON(w, http.StatusOK, envelope{"message": "You have successfully signed in"}, nil)
+	err = app.writeJSON(w, http.StatusOK, faculty, nil)
 	if err != nil {
 		app.serverErrorResponse(w, r, err)
 	}
@@ -143,7 +163,7 @@ func (app *application) logoutFacultyHandler(w http.ResponseWriter, r *http.Requ
 		Secure:   true,
 	})
 
-	err = app.writeJSON(w, http.StatusOK, envelope{"message": "You have been logged out"}, nil)
+	err = app.writeEnvelopedJSON(w, http.StatusOK, envelope{"message": "You have been logged out"}, nil)
 	if err != nil {
 		app.serverErrorResponse(w, r, err)
 	}
@@ -188,7 +208,7 @@ func (app *application) getUserWithTokenHandler(w http.ResponseWriter, r *http.R
 		return
 	}
 
-	err = app.writeJSON(w, http.StatusOK, envelope{"faculty": faculty}, nil)
+	err = app.writeEnvelopedJSON(w, http.StatusOK, envelope{"faculty": faculty}, nil)
 	if err != nil {
 		app.serverErrorResponse(w, r, err)
 	}
@@ -251,7 +271,7 @@ func (app *application) updateFacultyHandler(w http.ResponseWriter, r *http.Requ
 		return
 	}
 
-	err = app.writeJSON(w, http.StatusOK, envelope{"faculty": faculty}, nil)
+	err = app.writeEnvelopedJSON(w, http.StatusOK, envelope{"faculty": faculty}, nil)
 	if err != nil {
 		app.serverErrorResponse(w, r, err)
 	}
@@ -274,7 +294,7 @@ func (app *application) showFacultyHandler(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
-	err = app.writeJSON(w, http.StatusOK, envelope{"faculty": faculty}, nil)
+	err = app.writeEnvelopedJSON(w, http.StatusOK, envelope{"faculty": faculty}, nil)
 	if err != nil {
 		app.serverErrorResponse(w, r, err)
 	}

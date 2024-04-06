@@ -9,7 +9,7 @@ func (app *application) healthHandler(w http.ResponseWriter, r *http.Request) {
 		"status": "Up and running!",
 	}
 
-	err := app.writeJSON(w, http.StatusOK, env, nil)
+	err := app.writeEnvelopedJSON(w, http.StatusOK, env, nil)
 	if err != nil {
 		app.logger.Error(err.Error())
 		app.serverErrorResponse(w, r, err)

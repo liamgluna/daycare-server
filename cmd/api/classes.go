@@ -38,7 +38,7 @@ func (app *application) createClassHandler(w http.ResponseWriter, r *http.Reques
 	headers := make(http.Header)
 	headers.Set("Location", fmt.Sprintf("/classes/%d", class.ClassID))
 
-	err = app.writeJSON(w, http.StatusCreated, envelope{"class": class}, headers)
+	err = app.writeEnvelopedJSON(w, http.StatusCreated, envelope{"class": class}, headers)
 	if err != nil {
 		app.serverErrorResponse(w, r, err)
 	}
@@ -88,7 +88,7 @@ func (app *application) updateClassHandler(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
-	err = app.writeJSON(w, http.StatusOK, envelope{"class": class}, nil)
+	err = app.writeEnvelopedJSON(w, http.StatusOK, envelope{"class": class}, nil)
 	if err != nil {
 		app.serverErrorResponse(w, r, err)
 	}
@@ -112,7 +112,7 @@ func (app *application) deleteClassHandler(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
-	err = app.writeJSON(w, http.StatusOK, envelope{"message": "class deleted successfully"}, nil)
+	err = app.writeEnvelopedJSON(w, http.StatusOK, envelope{"message": "class deleted successfully"}, nil)
 	if err != nil {
 		app.serverErrorResponse(w, r, err)
 	}
@@ -136,7 +136,7 @@ func (app *application) showClassHandler(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	err = app.writeJSON(w, http.StatusOK, envelope{"class": class}, nil)
+	err = app.writeEnvelopedJSON(w, http.StatusOK, envelope{"class": class}, nil)
 	if err != nil {
 		app.serverErrorResponse(w, r, err)
 	}
@@ -162,7 +162,7 @@ func (app *application) listClassesHandler(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
-	err = app.writeJSON(w, http.StatusOK, envelope{"classes": classes, "metadata": metadata}, nil)
+	err = app.writeEnvelopedJSON(w, http.StatusOK, envelope{"classes": classes, "metadata": metadata}, nil)
 	if err != nil {
 		app.serverErrorResponse(w, r, err)
 		return

@@ -41,7 +41,7 @@ func (app *application) createClassStudentHandler(w http.ResponseWriter, r *http
 	headers := make(http.Header)
 	headers.Set("Location", fmt.Sprintf("/classes/%d/students", classStudent.ClassID))
 
-	err = app.writeJSON(w, http.StatusCreated, envelope{"classStudent": classStudent}, headers)
+	err = app.writeEnvelopedJSON(w, http.StatusCreated, envelope{"classStudent": classStudent}, headers)
 	if err != nil {
 		app.serverErrorResponse(w, r, err)
 	}
@@ -71,7 +71,7 @@ func (app *application) deleteClassStudentHandler(w http.ResponseWriter, r *http
 		return
 	}
 
-	err = app.writeJSON(w, http.StatusOK, envelope{"message": "class student deleted successfully"}, nil)
+	err = app.writeEnvelopedJSON(w, http.StatusOK, envelope{"message": "class student deleted successfully"}, nil)
 	if err != nil {
 		app.serverErrorResponse(w, r, err)
 	}
@@ -90,7 +90,7 @@ func (app *application) listClassStudentsHandler(w http.ResponseWriter, r *http.
 		return
 	}
 
-	err = app.writeJSON(w, http.StatusOK, envelope{"class_students": classStudents}, nil)
+	err = app.writeEnvelopedJSON(w, http.StatusOK, envelope{"class_students": classStudents}, nil)
 	if err != nil {
 		app.serverErrorResponse(w, r, err)
 	}
