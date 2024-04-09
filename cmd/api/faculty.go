@@ -215,9 +215,31 @@ func (app *application) getUserWithTokenHandler(w http.ResponseWriter, r *http.R
 }
 
 func (app *application) updateFacultyHandler(w http.ResponseWriter, r *http.Request) {
-	id, err := strconv.ParseInt(chi.URLParam(r, "id"), 10, 64)
-	if err != nil || id < 1 {
-		app.notFoundResponse(w, r)
+	cookie, err := r.Cookie("jwt")
+	if err != nil {
+		switch {
+		case errors.Is(err, http.ErrNoCookie):
+			app.badRequestResponse(w, r, err)
+
+		default:
+			app.serverErrorResponse(w, r, err)
+		}
+		return
+	}
+
+	token, err := jwt.ParseWithClaims(cookie.Value, &jwt.RegisteredClaims{}, func(token *jwt.Token) (interface{}, error) {
+		return []byte(app.cfg.jwtSecret), nil
+	})
+	if err != nil {
+		app.invalidCredentialsResponse(w, r)
+		return
+	}
+
+	claims := token.Claims.(*jwt.RegisteredClaims)
+
+	id, err := strconv.ParseInt(claims.Issuer, 10, 64)
+	if err != nil {
+		app.invalidCredentialsResponse(w, r)
 		return
 	}
 
@@ -271,7 +293,7 @@ func (app *application) updateFacultyHandler(w http.ResponseWriter, r *http.Requ
 		return
 	}
 
-	err = app.writeEnvelopedJSON(w, http.StatusOK, envelope{"faculty": faculty}, nil)
+	err = app.writeJSON(w, http.StatusOK, faculty, nil)
 	if err != nil {
 		app.serverErrorResponse(w, r, err)
 	}

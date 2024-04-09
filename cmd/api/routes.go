@@ -21,7 +21,7 @@ func (app *application) routes() http.Handler {
 	router.Use(middleware.Recoverer)
 	router.Use(cors.Handler(cors.Options{
 		AllowedOrigins:   []string{app.cfg.allowCORS},
-		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
+		AllowedMethods:   []string{"GET", "POST", "PATCH", "DELETE", "OPTIONS"},
 		AllowedHeaders:   []string{"Accept", "Authorization", "Content-Type", "X-CSRF-Token"},
 		ExposedHeaders:   []string{"Link"},
 		AllowCredentials: true,
@@ -48,7 +48,7 @@ func (app *application) loadStudentRoutes(router chi.Router) {
 func (app *application) loadFacultyRoutes(router chi.Router) {
 	router.Post("/", app.createFacultyHandler)
 	router.Get("/{id}", app.showFacultyHandler)
-	router.Patch("/{id}", app.updateFacultyHandler)
+	router.Patch("/profile", app.updateFacultyHandler)
 	router.Get("/profile", app.getUserWithTokenHandler)
 	router.Post("/login", app.loginFacultyHandler)
 	router.Post("/logout", app.logoutFacultyHandler)
