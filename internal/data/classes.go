@@ -157,3 +157,38 @@ func (m ClassModel) GetAll(name string, filters Filters) ([]*Class, Metadata, er
 
 	return classes, metaData, nil
 }
+
+func (m ClassModel) GetAllByFacultyID(faculty_id int64) ([]*Class, error) {
+	query := `SELECT class_id, class_name, term 
+			FROM classes
+			WHERE faculty_id = $1`
+
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+
+	rows, err := m.DB.QueryContext(ctx, query, faculty_id)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var classes []*Class
+	for rows.Next() {
+		var class Class
+		err := rows.Scan(
+			&class.ClassID,
+			&class.ClassName,
+			&class.Term,
+		)
+		if err != nil {
+			return nil, err
+		}
+		classes = append(classes, &class)
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return classes, nil
+}
