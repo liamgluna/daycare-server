@@ -33,7 +33,8 @@ func (app *application) routes() http.Handler {
 	router.Route("/students", app.loadStudentRoutes)
 	router.Route("/faculty", app.loadFacultyRoutes)
 	router.Route("/classes", app.loadClassRoutes)
-
+	router.Post("/login", app.loginFacultyHandler)
+	router.Post("/logout", app.logoutFacultyHandler)
 	return router
 }
 
@@ -50,14 +51,12 @@ func (app *application) loadFacultyRoutes(router chi.Router) {
 	router.Get("/{id}", app.showFacultyHandler)
 	router.Patch("/profile", app.updateFacultyHandler)
 	router.Get("/profile", app.getUserWithTokenHandler)
-	router.Post("/login", app.loginFacultyHandler)
-	router.Post("/logout", app.logoutFacultyHandler)
 	// router.Delete("/{id}", app.deleteFacultyHandler)
 }
 
 func (app *application) loadClassRoutes(router chi.Router) {
 	router.Post("/", app.createClassHandler)
-	router.Get("/", app.listClassesHandler)
+	router.Get("/", app.listClassesByFacultyIDHandler)
 	router.Get("/{id}", app.showClassHandler)
 	router.Patch("/{id}", app.updateClassHandler)
 	router.Delete("/{id}", app.deleteClassHandler)

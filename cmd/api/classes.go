@@ -7,6 +7,7 @@ import (
 	"strconv"
 
 	"github.com/go-chi/chi/v5"
+	"github.com/golang-jwt/jwt/v5"
 	"github.com/liamgluna/daycare-server/internal/data"
 )
 
@@ -163,6 +164,48 @@ func (app *application) listClassesHandler(w http.ResponseWriter, r *http.Reques
 	}
 
 	err = app.writeEnvelopedJSON(w, http.StatusOK, envelope{"classes": classes, "metadata": metadata}, nil)
+	if err != nil {
+		app.serverErrorResponse(w, r, err)
+		return
+	}
+}
+
+func (app *application) listClassesByFacultyIDHandler(w http.ResponseWriter, r *http.Request) {
+	cookie, err := r.Cookie("jwt")
+	if err != nil {
+		switch {
+		case errors.Is(err, http.ErrNoCookie):
+			app.badRequestResponse(w, r, err)
+
+		default:
+			app.serverErrorResponse(w, r, err)
+		}
+		return
+	}
+
+	token, err := jwt.ParseWithClaims(cookie.Value, &jwt.RegisteredClaims{}, func(token *jwt.Token) (interface{}, error) {
+		return []byte(app.cfg.jwtSecret), nil
+	})
+	if err != nil {
+		app.invalidCredentialsResponse(w, r)
+		return
+	}
+
+	claims := token.Claims.(*jwt.RegisteredClaims)
+
+	id, err := strconv.ParseInt(claims.Issuer, 10, 64)
+	if err != nil {
+		app.invalidCredentialsResponse(w, r)
+		return
+	}
+
+	classes, err := app.models.Classes.GetAllByFacultyID(id)
+	if err != nil {
+		app.serverErrorResponse(w, r, err)
+		return
+	}
+
+	err = app.writeJSON(w, http.StatusOK, classes, nil)
 	if err != nil {
 		app.serverErrorResponse(w, r, err)
 		return
