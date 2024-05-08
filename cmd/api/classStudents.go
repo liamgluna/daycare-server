@@ -90,7 +90,7 @@ func (app *application) listClassStudentsHandler(w http.ResponseWriter, r *http.
 		return
 	}
 
-	err = app.writeEnvelopedJSON(w, http.StatusOK, envelope{"class_students": classStudents}, nil)
+	err = app.writeJSON(w, http.StatusOK, classStudents, nil)
 	if err != nil {
 		app.serverErrorResponse(w, r, err)
 	}

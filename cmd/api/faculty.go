@@ -59,7 +59,7 @@ func (app *application) createFacultyHandler(w http.ResponseWriter, r *http.Requ
 	headers.Set("Location", fmt.Sprintf("/faculty/%d", faculty.FacultyID))
 
 	claims := &jwt.RegisteredClaims{
-		ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Hour * 24)), // 24 hours
+		ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Hour * 72)),
 		Issuer:    strconv.Itoa(int(faculty.FacultyID)),
 	}
 
@@ -74,7 +74,7 @@ func (app *application) createFacultyHandler(w http.ResponseWriter, r *http.Requ
 	http.SetCookie(w, &http.Cookie{
 		Name:     "jwt",
 		Value:    tokenString,
-		Expires:  time.Now().Add(time.Hour * 24),
+		Expires:  time.Now().Add(time.Hour * 72),
 		HttpOnly: true,
 		Secure:   true,
 	})
@@ -116,7 +116,7 @@ func (app *application) loginFacultyHandler(w http.ResponseWriter, r *http.Reque
 	}
 
 	claims := &jwt.RegisteredClaims{
-		ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Hour * 24)), // 24 hours
+		ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Hour * 72)),
 		Issuer:    strconv.Itoa(int(faculty.FacultyID)),
 	}
 
@@ -131,7 +131,7 @@ func (app *application) loginFacultyHandler(w http.ResponseWriter, r *http.Reque
 	http.SetCookie(w, &http.Cookie{
 		Name:     "jwt",
 		Value:    tokenString,
-		Expires:  time.Now().Add(time.Hour * 24),
+		Expires:  time.Now().Add(time.Hour * 72),
 		HttpOnly: true,
 		Secure:   true,
 	})
