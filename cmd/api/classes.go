@@ -137,7 +137,7 @@ func (app *application) showClassHandler(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	err = app.writeEnvelopedJSON(w, http.StatusOK, envelope{"class": class}, nil)
+	err = app.writeJSON(w, http.StatusOK, class, nil)
 	if err != nil {
 		app.serverErrorResponse(w, r, err)
 	}
