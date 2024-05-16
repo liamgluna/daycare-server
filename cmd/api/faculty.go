@@ -77,6 +77,7 @@ func (app *application) createFacultyHandler(w http.ResponseWriter, r *http.Requ
 		Expires:  time.Now().Add(time.Hour * 72),
 		HttpOnly: true,
 		Secure:   true,
+		SameSite: http.SameSiteStrictMode,
 	})
 
 	if err := app.writeJSON(w, http.StatusOK, faculty, nil); err != nil {
