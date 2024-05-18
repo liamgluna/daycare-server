@@ -16,7 +16,7 @@ type Guardian struct {
 	LastName     string `json:"last_name"`
 	Gender       string `json:"gender"`
 	Relationship string `json:"relationship"`
-	Occupation   string `json:"ocupation"`
+	Occupation   string `json:"occupation"`
 	Contact      string `json:"contact"`
 }
 

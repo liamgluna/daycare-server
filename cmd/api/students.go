@@ -147,7 +147,7 @@ func (app *application) createStudentWithGuardiansHandler(w http.ResponseWriter,
 			LastName     string `json:"last_name"`
 			Gender       string `json:"gender"`
 			Relationship string `json:"relationship"`
-			Occupation   string `json:"ocupation"`
+			Occupation   string `json:"occupation"`
 			Contact      string `json:"contact"`
 		} `json:"guardian"`
 	}
