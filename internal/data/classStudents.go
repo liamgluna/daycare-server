@@ -102,17 +102,18 @@ func (m ClassStudentsModel) GetStudentsByClassID(classID int64) ([]*Student, err
 }
 
 type StudentWithGuardian struct {
-	StudentID       int64  `json:"student_id"`
-	FirstName       string `json:"first_name"`
-	LastName        string `json:"last_name"`
-	Gender          string `json:"gender"`
-	DateOfBirth     Date   `json:"date_of_birth"`
-	Guardian        string `json:"guardian_name"`
-	GuardianContact string `json:"guardian_contact"`
-	GuardianID      int64  `json:"guardian_id"`
-	GuardianGender  string `json:"guard_gender"`
-	GuardianRel     string `json:"guardian_rel"`
-	GuardianOcc     string `json:"guardian_occ"`
+	StudentID         int64  `json:"student_id"`
+	FirstName         string `json:"first_name"`
+	LastName          string `json:"last_name"`
+	Gender            string `json:"gender"`
+	DateOfBirth       Date   `json:"date_of_birth"`
+	GuardianFirstName string `json:"guardian_first_name"`
+	GuardianLastName  string `json:"guardian_last_name"`
+	GuardianContact   string `json:"guardian_contact"`
+	GuardianID        int64  `json:"guardian_id"`
+	GuardianGender    string `json:"guardian_gender"`
+	GuardianRel       string `json:"guardian_rel"`
+	GuardianOcc       string `json:"guardian_occ"`
 }
 
 func (m ClassStudentsModel) GetStudentsByClassIDWithGuardian(classID int64) ([]*StudentWithGuardian, error) {
@@ -121,7 +122,7 @@ func (m ClassStudentsModel) GetStudentsByClassIDWithGuardian(classID int64) ([]*
 	}
 
 	query := `
-		SELECT s.student_id, s.first_name, s.last_name, s.gender, s.date_of_birth, concat(g.first_name, ' ', g.last_name) as guardian_name, g.contact,
+		SELECT s.student_id, s.first_name, s.last_name, s.gender, s.date_of_birth, g.first_name, g.last_name, g.contact,
 		g.gender, g.relationship, g.occupation
 		FROM students s
 		INNER JOIN class_students cs ON s.student_id = cs.student_id
@@ -149,7 +150,8 @@ func (m ClassStudentsModel) GetStudentsByClassIDWithGuardian(classID int64) ([]*
 			&student.LastName,
 			&student.Gender,
 			&student.DateOfBirth,
-			&student.Guardian,
+			&student.GuardianFirstName,
+			&student.GuardianLastName,
 			&student.GuardianContact,
 			&student.GuardianGender,
 			&student.GuardianRel,
