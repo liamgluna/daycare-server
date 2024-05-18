@@ -43,6 +43,7 @@ func (app *application) loadStudentRoutes(router chi.Router) {
 	router.Post("/", app.createStudentWithGuardiansHandler)
 	router.Get("/", app.listStudentsHandler)
 	router.Get("/{id}/guardian", app.showStudentGuardiansHandler)
+	router.Patch("/{id}/guardian", app.updateStudentAndGuardianHandler)
 	router.Get("/{id}", app.showStudentHandler)
 	router.Patch("/{id}", app.updateStudentHandler)
 	router.Delete("/{id}", app.deleteStudentHandler)

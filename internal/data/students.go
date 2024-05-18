@@ -34,36 +34,6 @@ func (m StudentModel) Insert(student *Student) error {
 	return m.DB.QueryRowContext(ctx, query, args...).Scan(&student.StudentID)
 }
 
-/*
-The post request:
-
-	{
-	  "student": {
-	    "first_name": "John",
-	    "last_name": "Wick",
-	    "gender": "Male",
-	    "date_of_birth": "2020-Mar-01"
-	  },
-	  "guardians": [
-	    {
-	      "first_name": "John",
-	      "last_name": "Doe",
-	      "gender": "Male",
-	      "relationship": "Father",
-	      "ocupation": "IT Specialist",
-	      "contact": 1234567890
-	    },
-	    {
-	      "first_name": "Jane",
-	      "last_name": "Doe",
-	      "gender": "Male",
-	      "relationship": "Mother",
-	      "ocupation": "attorney",
-	      "contact": "1234567890"
-	    }
-	  ]
-	}
-*/
 func (m StudentModel) InsertWithGuardians(student *Student, guardians []*Guardian) error {
 	tx, err := m.DB.Begin()
 	if err != nil {
@@ -235,59 +205,74 @@ func (m StudentModel) Delete(id int64) error {
 	return nil
 }
 
-// delete also the associated guardians
-// func (m StudentModel) Delete(id int64) error {
-// 	if id < 1 {
-// 		return ErrRecordNotFound
-// 	}
+type StudentAndGuardian struct {
+	Student  Student  `json:"student"`
+	Guardian Guardian `json:"guardian"`
+}
 
-// 	tx, err := m.DB.Begin()
-// 	if err != nil {
-// 		return err
-// 	}
-// 	defer tx.Rollback()
+func (m StudentModel) UpdateWithGuardian(student *Student, guardian *Guardian) error {
+	tx, err := m.DB.Begin()
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback()
 
-// 	query := `
-// 		DELETE FROM students
-// 		WHERE student_id = $1
-// 	`
+	// Update student
+	query := `
+		UPDATE students
+		SET first_name = $1, last_name = $2, gender = $3, date_of_birth = $4
+		WHERE student_id = $5
+		`
 
-// 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
-// 	defer cancel()
+	args := []any{student.FirstName, student.LastName, student.Gender, time.Time(student.DateOfBirth), student.StudentID}
 
-// 	result, err := tx.ExecContext(ctx, query, id)
-// 	if err != nil {
-// 		return err
-// 	}
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
 
-// 	rowsAffected, err := result.RowsAffected()
-// 	if err != nil {
-// 		return err
-// 	}
+	result, err := tx.ExecContext(ctx, query, args...)
+	if err != nil {
+		return err
+	}
 
-// 	if rowsAffected == 0 {
-// 		return ErrRecordNotFound
-// 	}
+	rowsAffected, err := result.RowsAffected()
+	if err != nil {
+		return err
+	}
 
-// 	// Delete associated guardians
-// 	query = `
-// 		DELETE FROM student_guardian
-// 		WHERE student_id = $1
-// 		`
+	if rowsAffected == 0 {
+		return ErrRecordNotFound
+	}
 
-// 	_, err = tx.ExecContext(ctx, query, id)
-// 	if err != nil {
-// 		return err
-// 	}
+	// Update guardian
+	query = `
+		UPDATE guardians
+		SET first_name = $1, last_name = $2, gender = $3, relationship = $4, occupation = $5, contact = $6
+		WHERE student_id = $7
+	`
 
-// 	// Commit transaction
-// 	err = tx.Commit()
-// 	if err != nil {
-// 		return err
-// 	}
+	args = []any{guardian.FirstName, guardian.LastName, guardian.Gender, guardian.Relationship, guardian.Occupation, guardian.Contact, student.StudentID}
 
-// 	return nil
-// }
+	result, err = tx.ExecContext(ctx, query, args...)
+	if err != nil {
+		return err
+	}
+
+	rowsAffected, err = result.RowsAffected()
+	if err != nil {
+		return err
+	}
+
+	if rowsAffected == 0 {
+		return ErrRecordNotFound
+	}
+
+	err = tx.Commit()
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
 
 func (m StudentModel) Update(student *Student) error {
 	query := `
