@@ -119,6 +119,59 @@ func (m StudentModel) InsertWithGuardians(student *Student, guardians []*Guardia
 	return nil
 }
 
+func (m StudentModel) InsertWithGuardian(student *Student, guardian *Guardian) error {
+	tx, err := m.DB.Begin()
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback()
+
+	// Insert student
+	query := `
+		INSERT INTO students (first_name, last_name, gender, date_of_birth)
+		VALUES ($1, $2, $3, $4)
+		RETURNING student_id
+	`
+	var studentID int64
+	err = tx.QueryRow(query, student.FirstName, student.LastName, student.Gender, time.Time(student.DateOfBirth)).Scan(&studentID)
+	if err != nil {
+		return err
+	}
+
+	student.StudentID = studentID
+
+	// Insert guardian
+	query = `
+		INSERT INTO guardians (first_name, last_name, gender, relationship, occupation, contact, student_id)
+		VALUES ($1, $2, $3, $4, $5, $6, $7)
+		RETURNING guardian_id
+	`
+
+	var guardianID int
+	err = tx.QueryRow(query, guardian.FirstName, guardian.LastName, guardian.Gender, guardian.Relationship, guardian.Occupation, guardian.Contact, studentID).Scan(&guardianID)
+	if err != nil {
+		return err
+	}
+
+	// Associate guardian with the student
+	query = `
+			INSERT INTO student_guardian (student_id, guardian_id)
+			VALUES ($1, $2)
+		`
+	_, err = tx.Exec(query, studentID, guardianID)
+	if err != nil {
+		return err
+	}
+
+	// Commit transaction
+	err = tx.Commit()
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (m StudentModel) Get(id int64) (*Student, error) {
 	if id < 1 {
 		return nil, ErrRecordNotFound

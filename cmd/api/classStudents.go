@@ -84,7 +84,7 @@ func (app *application) listClassStudentsHandler(w http.ResponseWriter, r *http.
 		return
 	}
 
-	classStudents, err := app.models.ClassStudents.GetStudentsByClassID(classID)
+	classStudents, err := app.models.ClassStudents.GetStudentsByClassIDWithGuardian(classID)
 	if err != nil {
 		app.serverErrorResponse(w, r, err)
 		return

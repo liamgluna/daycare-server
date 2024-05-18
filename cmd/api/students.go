@@ -77,6 +77,63 @@ The post request:
 	}
 */
 
+// func (app *application) createStudentWithGuardiansHandler(w http.ResponseWriter, r *http.Request) {
+// 	var input struct {
+// 		Student struct {
+// 			FirstName   string    `json:"first_name"`
+// 			LastName    string    `json:"last_name"`
+// 			Gender      string    `json:"gender"`
+// 			DateOfBirth data.Date `json:"date_of_birth"`
+// 		} `json:"student"`
+// 		Guardians []struct {
+// 			FirstName    string `json:"first_name"`
+// 			LastName     string `json:"last_name"`
+// 			Gender       string `json:"gender"`
+// 			Relationship string `json:"relationship"`
+// 			Occupation   string `json:"ocupation"`
+// 			Contact      string `json:"contact"`
+// 		} `json:"guardians"`
+// 	}
+// 	err := app.readJSON(w, r, &input)
+// 	if err != nil {
+// 		app.badRequestResponse(w, r, err)
+// 		return
+// 	}
+
+// 	student := &data.Student{
+// 		FirstName:   input.Student.FirstName,
+// 		LastName:    input.Student.LastName,
+// 		Gender:      input.Student.Gender,
+// 		DateOfBirth: input.Student.DateOfBirth,
+// 	}
+
+// 	guardians := make([]*data.Guardian, len(input.Guardians))
+// 	for i, g := range input.Guardians {
+// 		guardians[i] = &data.Guardian{
+// 			FirstName:    g.FirstName,
+// 			LastName:     g.LastName,
+// 			Gender:       g.Gender,
+// 			Relationship: g.Relationship,
+// 			Occupation:   g.Occupation,
+// 			Contact:      g.Contact,
+// 		}
+// 	}
+
+// 	err = app.models.Students.InsertWithGuardians(student, guardians)
+// 	if err != nil {
+// 		app.serverErrorResponse(w, r, err)
+// 		return
+// 	}
+
+// 	headers := make(http.Header)
+// 	headers.Set("Location", fmt.Sprintf("/students/%d", student.StudentID))
+
+// 	err = app.writeJSON(w, http.StatusCreated, student, headers)
+// 	if err != nil {
+// 		app.serverErrorResponse(w, r, err)
+// 	}
+// }
+
 func (app *application) createStudentWithGuardiansHandler(w http.ResponseWriter, r *http.Request) {
 	var input struct {
 		Student struct {
@@ -85,14 +142,14 @@ func (app *application) createStudentWithGuardiansHandler(w http.ResponseWriter,
 			Gender      string    `json:"gender"`
 			DateOfBirth data.Date `json:"date_of_birth"`
 		} `json:"student"`
-		Guardians []struct {
+		Guardian struct {
 			FirstName    string `json:"first_name"`
 			LastName     string `json:"last_name"`
 			Gender       string `json:"gender"`
 			Relationship string `json:"relationship"`
 			Occupation   string `json:"ocupation"`
 			Contact      string `json:"contact"`
-		} `json:"guardians"`
+		} `json:"guardian"`
 	}
 	err := app.readJSON(w, r, &input)
 	if err != nil {
@@ -107,19 +164,16 @@ func (app *application) createStudentWithGuardiansHandler(w http.ResponseWriter,
 		DateOfBirth: input.Student.DateOfBirth,
 	}
 
-	guardians := make([]*data.Guardian, len(input.Guardians))
-	for i, g := range input.Guardians {
-		guardians[i] = &data.Guardian{
-			FirstName:    g.FirstName,
-			LastName:     g.LastName,
-			Gender:       g.Gender,
-			Relationship: g.Relationship,
-			Occupation:   g.Occupation,
-			Contact:      g.Contact,
-		}
+	guardian := &data.Guardian{
+		FirstName:    input.Guardian.FirstName,
+		LastName:     input.Guardian.LastName,
+		Gender: input.Guardian.Gender,
+		Relationship: input.Guardian.Relationship,
+		Occupation:   input.Guardian.Occupation,
+		Contact:      input.Guardian.Contact,
 	}
 
-	err = app.models.Students.InsertWithGuardians(student, guardians)
+	err = app.models.Students.InsertWithGuardian(student, guardian)
 	if err != nil {
 		app.serverErrorResponse(w, r, err)
 		return
@@ -216,6 +270,25 @@ func (app *application) updateStudentHandler(w http.ResponseWriter, r *http.Requ
 		app.serverErrorResponse(w, r, err)
 	}
 
+}
+
+func (app *application) showStudentGuardiansHandler(w http.ResponseWriter, r *http.Request) {
+	id, err := strconv.ParseInt(chi.URLParam(r, "id"), 10, 64)
+	if err != nil || id < 1 {
+		app.notFoundResponse(w, r)
+		return
+	}
+
+	guardians, err := app.models.Guardians.GetByStudentID(id)
+	if err != nil {
+		app.serverErrorResponse(w, r, err)
+		return
+	}
+
+	err = app.writeJSON(w, http.StatusOK, guardians, nil)
+	if err != nil {
+		app.serverErrorResponse(w, r, err)
+	}
 }
 
 func (app *application) showStudentHandler(w http.ResponseWriter, r *http.Request) {
