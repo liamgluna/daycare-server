@@ -67,4 +67,6 @@ func (app *application) loadClassRoutes(router chi.Router) {
 	router.Get("/{classID}/students", app.listClassStudentsHandler)
 	router.Post("/{classID}/students", app.createClassStudentHandler)
 	router.Delete("/{classID}/students/{studentID}", app.deleteClassStudentHandler)
+
+	router.Post("/{classID}/attendance/{studentID}", app.addStudentAttendance)
 }
