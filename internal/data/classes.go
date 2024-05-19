@@ -162,7 +162,8 @@ func (m ClassModel) GetAll(name string, filters Filters) ([]*Class, Metadata, er
 func (m ClassModel) GetAllByFacultyID(faculty_id int64) ([]*Class, error) {
 	query := `SELECT class_id, class_name, term, schedule
 			FROM classes
-			WHERE faculty_id = $1`
+			WHERE faculty_id = $1
+			ORDER BY class_id ASC`
 
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
