@@ -35,3 +35,31 @@ func (m StudentAttendanceModel) Insert(studentAttendance *StudentAttendance) err
 
 	return nil
 }
+
+func (m StudentAttendanceModel) GetAttendance(date time.Time, classID int64) ([]*StudentAttendance, error) {
+	query := `
+		SELECT student_id, class_id, class_date, present
+		FROM student_attendance
+		WHERE class_date = $1 AND class_id = $2
+		`
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+
+	rows, err := m.DB.QueryContext(ctx, query, date, classID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	studentAttendances := []*StudentAttendance{}
+	for rows.Next() {
+		studentAttendance := &StudentAttendance{}
+		err := rows.Scan(&studentAttendance.StudentID, &studentAttendance.ClassID, &studentAttendance.ClassDate, &studentAttendance.Present)
+		if err != nil {
+			return nil, err
+		}
+		studentAttendances = append(studentAttendances, studentAttendance)
+	}
+
+	return studentAttendances, nil
+}	

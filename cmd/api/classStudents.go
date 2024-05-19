@@ -141,3 +141,28 @@ func (app *application) addStudentAttendance(w http.ResponseWriter, r *http.Requ
 		app.serverErrorResponse(w, r, err)
 	}
 }
+
+func (app *application) getClassAttendance(w http.ResponseWriter, r *http.Request) {
+	classID, err := strconv.ParseInt(chi.URLParam(r, "classID"), 10, 64)
+	if err != nil || classID < 1 {
+		app.notFoundResponse(w, r)
+		return
+	}
+
+	date, err := time.Parse("2006-01-02", r.URL.Query().Get("date"))
+	if err != nil {
+		app.badRequestResponse(w, r, err)
+		return
+	}
+
+	studentAttendances, err := app.models.StudentAttendance.GetAttendance(date, classID)
+	if err != nil {
+		app.serverErrorResponse(w, r, err)
+		return
+	}
+
+	err = app.writeJSON(w, http.StatusOK, studentAttendances, nil)
+	if err != nil {
+		app.serverErrorResponse(w, r, err)
+	}
+}
