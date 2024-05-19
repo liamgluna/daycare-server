@@ -15,6 +15,7 @@ func (app *application) createClassHandler(w http.ResponseWriter, r *http.Reques
 	var input struct {
 		FacultyID int64  `json:"faculty_id"`
 		ClassName string `json:"class_name"`
+		Schedule  string `json:"schedule"`
 		Term      string `json:"term"`
 	}
 
@@ -28,6 +29,7 @@ func (app *application) createClassHandler(w http.ResponseWriter, r *http.Reques
 		FacultyID: input.FacultyID,
 		ClassName: input.ClassName,
 		Term:      input.Term,
+		Schedule:  input.Schedule,
 	}
 
 	err = app.models.Classes.Insert(class)
@@ -66,6 +68,7 @@ func (app *application) updateClassHandler(w http.ResponseWriter, r *http.Reques
 
 	var input struct {
 		ClassName *string `json:"class_name"`
+		Schedule  *string `json:"schedule"`
 		Term      *string `json:"term"`
 	}
 
@@ -81,6 +84,10 @@ func (app *application) updateClassHandler(w http.ResponseWriter, r *http.Reques
 
 	if input.Term != nil {
 		class.Term = *input.Term
+	}
+
+	if input.Schedule != nil {
+		class.Schedule = *input.Schedule
 	}
 
 	err = app.models.Classes.Update(class)

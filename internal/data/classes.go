@@ -16,15 +16,16 @@ type Class struct {
 	FacultyID int64  `json:"faculty_id"`
 	ClassName string `json:"class_name"`
 	Term      string `json:"term"`
+	Schedule  string `json:"schedule"`
 }
 
 func (m ClassModel) Insert(class *Class) error {
 	query := `
-		INSERT INTO classes (faculty_id, class_name, term) 
-		VALUES ($1, $2, $3)
+		INSERT INTO classes (faculty_id, class_name, term, schedule) 
+		VALUES ($1, $2, $3, $4)
 		RETURNING class_id
 		`
-	args := []any{class.FacultyID, class.ClassName, class.Term}
+	args := []any{class.FacultyID, class.ClassName, class.Term, class.Schedule}
 
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
@@ -37,7 +38,7 @@ func (m ClassModel) Get(id int64) (*Class, error) {
 		return nil, ErrRecordNotFound
 	}
 
-	query := `SELECT class_id, faculty_id, class_name, term
+	query := `SELECT class_id, faculty_id, class_name, term, schedule
 	 	FROM classes WHERE class_id = $1`
 
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
@@ -46,7 +47,7 @@ func (m ClassModel) Get(id int64) (*Class, error) {
 	row := m.DB.QueryRowContext(ctx, query, id)
 
 	class := &Class{}
-	err := row.Scan(&class.ClassID, &class.FacultyID, &class.ClassName, &class.Term)
+	err := row.Scan(&class.ClassID, &class.FacultyID, &class.ClassName, &class.Term, &class.Schedule)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return nil, ErrRecordNotFound
@@ -60,10 +61,10 @@ func (m ClassModel) Get(id int64) (*Class, error) {
 func (m ClassModel) Update(class *Class) error {
 	query := `
 		UPDATE classes 
-		SET class_name = $1, term = $2
-		WHERE class_id = $3
+		SET class_name = $1, term = $2, schedule = $3
+		WHERE class_id = $4
 		`
-	args := []any{class.ClassName, class.Term, class.ClassID}
+	args := []any{class.ClassName, class.Term, class.Schedule, class.ClassID}
 
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
@@ -159,7 +160,7 @@ func (m ClassModel) GetAll(name string, filters Filters) ([]*Class, Metadata, er
 }
 
 func (m ClassModel) GetAllByFacultyID(faculty_id int64) ([]*Class, error) {
-	query := `SELECT class_id, class_name, term 
+	query := `SELECT class_id, class_name, term, schedule
 			FROM classes
 			WHERE faculty_id = $1`
 
@@ -179,6 +180,7 @@ func (m ClassModel) GetAllByFacultyID(faculty_id int64) ([]*Class, error) {
 			&class.ClassID,
 			&class.ClassName,
 			&class.Term,
+			&class.Schedule,
 		)
 		if err != nil {
 			return nil, err
