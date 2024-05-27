@@ -195,3 +195,22 @@ func (m ClassModel) GetAllByFacultyID(faculty_id int64) ([]*Class, error) {
 
 	return classes, nil
 }
+
+func (m ClassModel) NumberOfFacultyClasses(faculty_id int64) (int, error) {
+	query := `SELECT count(*)
+			FROM classes
+			WHERE faculty_id = $1`
+
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+
+	row := m.DB.QueryRowContext(ctx, query, faculty_id)
+
+	var count int
+	err := row.Scan(&count)
+	if err != nil {
+		return 0, err
+	}
+
+	return count, nil
+}

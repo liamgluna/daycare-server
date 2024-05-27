@@ -55,6 +55,11 @@ func (app *application) loadFacultyRoutes(router chi.Router) {
 	router.Patch("/profile", app.updateFacultyHandler)
 	router.Get("/profile", app.getUserWithTokenHandler)
 	// router.Delete("/{id}", app.deleteFacultyHandler)
+	
+	// get number of classes
+	router.Get("/{id}/classes", app.showNumberofClassesByFacultyHandler)
+	router.Get("/{id}/classes/students", app.showNumberOStudentsByFacultyHandler)
+	router.Get("/{id}/classes/attendance", app.showNumberOfAttendanceTakenByFacultyHandler)
 }
 
 func (app *application) loadClassRoutes(router chi.Router) {

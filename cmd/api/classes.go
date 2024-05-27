@@ -218,3 +218,4 @@ func (app *application) listClassesByFacultyIDHandler(w http.ResponseWriter, r *
 		return
 	}
 }
+

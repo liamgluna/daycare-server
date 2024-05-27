@@ -169,3 +169,26 @@ func (m ClassStudentsModel) GetStudentsByClassIDWithGuardian(classID int64) ([]*
 
 	return students, nil
 }
+
+func (m ClassStudentsModel) NumberOfStudentsByFacultyID(facultyID int64) (int, error) {
+	query := `
+		SELECT count(DISTINCT s.student_id)
+		FROM students s
+		INNER JOIN class_students cs ON s.student_id = cs.student_id
+		INNER JOIN classes c ON cs.class_id = c.class_id
+		WHERE c.faculty_id = $1
+		`
+
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+
+	row := m.DB.QueryRowContext(ctx, query, facultyID)
+
+	var count int
+	err := row.Scan(&count)
+	if err != nil {
+		return 0, err
+	}
+
+	return count, nil
+}

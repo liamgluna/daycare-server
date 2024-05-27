@@ -62,4 +62,29 @@ func (m StudentAttendanceModel) GetAttendance(date time.Time, classID int64) ([]
 	}
 
 	return studentAttendances, nil
-}	
+}
+
+func (m StudentAttendanceModel) NumberOfAttendanceTakenByFaculty(facultyID int64) (int, error) {
+	query := `
+		SELECT COUNT(DISTINCT class_id)
+		FROM student_attendance
+		WHERE class_id IN (
+			SELECT class_id
+			FROM classes
+			WHERE faculty_id = $1
+		)
+	`
+
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+
+	row := m.DB.QueryRowContext(ctx, query, facultyID)
+
+	var count int
+	err := row.Scan(&count)
+	if err != nil {
+		return 0, err
+	}
+
+	return count, nil
+}

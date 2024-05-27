@@ -322,3 +322,65 @@ func (app *application) showFacultyHandler(w http.ResponseWriter, r *http.Reques
 		app.serverErrorResponse(w, r, err)
 	}
 }
+
+func (app *application) showNumberofClassesByFacultyHandler(w http.ResponseWriter, r *http.Request) {
+	//sleep for 0.5 seconds
+
+	id, err := strconv.ParseInt(chi.URLParam(r, "id"), 10, 64)
+	if err != nil || id < 1 {
+		app.notFoundResponse(w, r)
+		return
+	}
+
+	count, err := app.models.Classes.NumberOfFacultyClasses(id)
+	if err != nil {
+		app.serverErrorResponse(w, r, err)
+		return
+	}
+	time.Sleep(500 * time.Millisecond)
+
+	err = app.writeEnvelopedJSON(w, http.StatusOK, envelope{"count": count}, nil)
+	if err != nil {
+		app.serverErrorResponse(w, r, err)
+	}
+}
+
+func (app *application) showNumberOStudentsByFacultyHandler(w http.ResponseWriter, r *http.Request) {
+	id, err := strconv.ParseInt(chi.URLParam(r, "id"), 10, 64)
+	if err != nil || id < 1 {
+		app.notFoundResponse(w, r)
+		return
+	}
+
+	count, err := app.models.ClassStudents.NumberOfStudentsByFacultyID(id)
+	if err != nil {
+		app.serverErrorResponse(w, r, err)
+		return
+	}
+	time.Sleep(500 * time.Millisecond)
+
+	err = app.writeEnvelopedJSON(w, http.StatusOK, envelope{"count": count}, nil)
+	if err != nil {
+		app.serverErrorResponse(w, r, err)
+	}
+}
+
+func (app *application) showNumberOfAttendanceTakenByFacultyHandler(w http.ResponseWriter, r *http.Request) {
+	id, err := strconv.ParseInt(chi.URLParam(r, "id"), 10, 64)
+	if err != nil || id < 1 {
+		app.notFoundResponse(w, r)
+		return
+	}
+
+	count, err := app.models.StudentAttendance.NumberOfAttendanceTakenByFaculty(id)
+	if err != nil {
+		app.serverErrorResponse(w, r, err)
+		return
+	}
+	time.Sleep(500 * time.Millisecond)
+
+	err = app.writeEnvelopedJSON(w, http.StatusOK, envelope{"count": count}, nil)
+	if err != nil {
+		app.serverErrorResponse(w, r, err)
+	}
+}
